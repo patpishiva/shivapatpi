@@ -1,0 +1,59 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: shivapatpi
+  labels:
+    app: shivapatpi
+spec:
+  selector:
+    matchLabels:
+      app: shivapatpi
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: shivapatpi
+    spec:
+      nodeSelector:
+       "beta.kubernetes.io/os": windows
+      containers:
+      - image: "shpatpi.azurecr.io/shivapatpi"
+        name: shivapatpi
+        ports:
+        - containerPort: 80
+          protocol: TCP
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: shivapatpi
+spec:
+  selector:
+    app: shivapatpi
+  ports:
+  - protocol: TCP
+    port: 80
+    targetPort: 80
+
+---
+
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: shivapatpi
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: "/"
+spec:
+  ingressClassName: nginx
+  rules:
+   - http: 
+      paths:
+      - path: /
+        backend:
+          service:
+            name: shivapatpi
+            port:
+              number: 80
+        pathType: Prefix
